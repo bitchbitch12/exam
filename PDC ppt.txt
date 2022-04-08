@@ -1,0 +1,86 @@
+In the fourth and final stage of the parallel algorithm design process, we specify where each task is to execute.
+
+This mapping problem does not arise on uniprocessors or on shared-memory computers that provide automatic task scheduling. 
+
+Mapping remains a difficult problem that must be explicitly 
+addressed when designing parallel algorithms.
+
+Our goal in developing mapping algorithms is normally to minimize total execution time. We use two strategies to achieve this goal: 
+1. Place tasks that are able to execute concurrently on different processors, so as to enhance concurrency. 
+2. Place tasks that communicate frequently on the same processor, so as to increase 
+locality
+
+These two strategies will sometimes conflict, in which case our design will involve 
+tradeoffs. In addition, resource limitations may restrict the number of tasks that can be placed on a single processor.The mapping problem is known to be NP -complete, meaning that no computationally tractable (polynomial-time) algorithm can exist for evaluating these tradeoffs
+
+Many algorithms developed using domain decomposition techniques feature a fixed number of equal-sized tasks and structured local and global communication.
+In such cases, an efficient mapping is straightforward.We map tasks in a way that minimizes interprocessor communication we may also choose to agglomerate tasks mapped to the same processor, if this has not already been done, to yield a total of P coarse-grained tasks, one per processor.
+
+In more complex domain decomposition-based algorithms with variable amounts of work per task and/or unstructured communication patterns, efficient agglomeration and mapping strategies may not be obvious to the programmer.
+Hence, we may employ load balancing algorithms that seek to 
+identify efficient agglomeration and mapping strategies, typically by using heuristic techniques.
+
+Load balancing:
+The time required to execute these algorithms must be weighed against the benefits of reduced execution time.Probabilistic load-balancing methods tend to have lower overhead than do methods that exploit structure in an application.
+The most complex problems are those in which either the number of tasks or the amount of 
+computation or communication per task changes dynamically during program execution. In the case of problems developed using domain decomposition techniques, we may use a dynamic loadbalancing strategy in which a load-balancing algorithm is executed periodically to determine a new agglomeration and mapping. Because load balancing must be performed many times during 
+program execution, local algorithms may be preferred that do not require global knowledge of computation state.
+
+Algorithms based on functional decomposition often yield computations consisting of many shortlived tasks that coordinate with other tasks only at the start and end of execution. In this case, we can use task-scheduling algorithms, which allocate tasks to processors that are idle or that are likely to become idle.
+
+Load balancing algos:
+A wide variety of both general-purpose and application-specific load-balancing techniques have been proposed for use in parallel algorithms based on domain decomposition techniques.We 
+review several representative approaches here (the chapter notes provide references to other methods), namely recursive bisection methods, local algorithms, probabilistic methods, and cyclic mappings. These techniques are all intended to agglomerate fine-grained tasks defined in an initial 
+partition to yield one coarse-grained task per processor.Alternatively, we can think of them as partitioning our computational domain to yield one subdomain for each processor. For this reason, they are often referred to as partitioning algorithms.
+
+
+Recursive Bisection:
+Recursive bisection techniques are used to partition a domain (e.g., a finite element grid) into subdomains of approximately equal computational cost while attempting to minimize communication costs, that is, the number of channels crossing task boundaries. A divide-andconquer approach is taken. The domain is first cut in one dimension to yield two subdomains. Cuts are then made recursively in the new subdomains until we have as many subdomains as we require 
+tasks. Notice that this recursive strategy allows the partitioning algorithm itself to be executed in parallel.
+
+Recursive coordinate bisection:
+
+The most straightforward of the recursive bisection techniques is recursive coordinate bisection, which is normally applied to irregular grids that have a mostly local communication structure. 
+This technique makes cuts based on the physical coordinates of grid points in the domain, at each step subdividing along the longer dimension so that if (for example) the cut is made along the x dimension, grid points in one subdomain will all have an x -coordinate greater than grid points in the other.
+This approach has the advantages of being simple and inexpensive. It also does a good job of partitioning computation. 
+Disadvantage is that it does not optimize communication performance.
+
+Unbalanced recursive bisection:
+
+A variant of recursive bisection called unbalanced recursive bisection attempts to reduce communication costs by forming subgrids that have better aspect ratios. Instead of automatically dividing a grid in half, it considers the P-1 partitions obtained by forming unbalanced subgrids with 1/P and (P-1)/P of the load, with 2/P and (P-2)/P of the load, and so on, and chooses the partition that minimizes partition aspect ratio. This method increases the cost of computing the 
+partition but can reduce communication costs.
+
+
+Shows a mapping onto 64 processors constructed by using unbalanced recursive bisection. In this instance, the grid in question is an irregular finite element mesh generated for a superconductivity simulation. 
+The unbalanced recursive bisection algorithm, applied here to a superconductivity simulation in which increased computational load corresponds to an increased number of triangular elements in certain areas of the grid. The recursive partitioning yields sixty four subdomains, with for example the first partition descending vertically between subdomains 28 and 5.
+
+Recursive graph bisection
+Another technique, called recursive graph bisection, can be useful in the case of more complex unstructured grids, for example, finite element meshes. This technique uses connectivity information to reduce the number of grid edges crossing subdomain boundaries, and hence to reduce communication requirements. A grid is treated as a graph with N vertices (grid points) . 
+The algorithm first identifies the two extremities of the graph, that is, the two vertices that are the most separated in terms of graph distance. (The graph distance between two vertices is the smallest number of edges that must be traversed to go between them.) Each vertex is then assigned to the 
+subdomain corresponding to the closer extremity. 
+
+
+The techniques just described are relatively expensive because they require global knowledge of computation state
+
+
+Local Algorithms:
+ local load-balancing algorithms compensate for changes in 
+computational load using only information obtained from a small number of neighboring processors. For example, processors may be organized in a logical mesh; periodically, each processor compares its computational load with that of its neighbors in the mesh and transfers computation if the difference in load exceeds some threshold.
+
+Probabilistic Method:
+A particularly simple approach to load balancing is to allocate tasks to randomly selected processors. 
+If the number of tasks is large, we can expect that each processor will be allocated about the same amount of computation. 
+Advantages :
+Low cost and Scalability. 
+Disadvantages : 	
+Off-processor communication is required for virtually every task and that acceptable load distribution is achieved only if there are many more tasks than there are processors. 
+
+
+Cyclic Mappings:
+If we know both that computational load per grid point varies and that there is significant spatial locality in load levels, then a cyclic or scattered, mapping of tasks to processors can be appropriate.
+Each of P processors is allocated every P th task according to some enumeration of the tasks .
+This technique is a form of probabilistic mapping. 
+The goal is that, on average, each processor will be allocated about the same computational load. 
+
+The benefits of improved load balance may need to be weighed against increased communication costs due to reduced locality. 
+Block cyclic distributions are also possible, in which blocks of tasks are allocated to processors. 
