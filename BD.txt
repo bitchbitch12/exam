@@ -1,0 +1,229 @@
+##Q1.
+
+def map1(path):
+
+    with open(path, 'r', encoding = 'utf-8', errors = 'ignore') as f:
+        words = []
+        for line in f:
+            for word in line.split():
+                words.append(word)
+    print(words)
+
+    dict_values = {}
+    for word in words:
+        if word not in dict_values.keys():
+            dict_values[word] = [1]
+
+        else:
+            dict_values[word].append(1)
+
+    return dict_values
+
+def reduce1(d):
+    reduced_dict = {}
+    for i, j in d.items():
+        reduced_dict[i] = len(j)
+    
+    return reduced_dict
+
+result = map1(path1)
+print(result)
+reduce1(result)
+
+
+##Q2.
+def map2(path):
+
+    with open(path, 'r', encoding = 'utf-8', errors = 'ignore') as f:
+        letters = []
+        for line in f:
+            for word in line.split():
+                for letter in word:
+                    letters.append(letter)
+
+    letters_map = {}
+    for i in letters:
+        if i not in [".", ","]:
+            if i not in letters_map:
+                letters_map[i] = [1]
+            else:
+                letters_map[i].append(1)
+    
+    return letters_map
+
+def reduce2(map_dict):
+    reduced_dict = []
+    for i, j in map_dict.items():
+        reduced_dict.append((i, len(j)))
+
+    return set(reduced_dict)
+
+results2 = map2(path1)
+print("MAP\n", results2)
+
+print("\n\nREDUCE\n")
+reduce2(results2)
+
+
+##Q3.
+from nltk.tokenize import RegexpTokenizer
+tokenizer = RegexpTokenizer(r'\w+')
+def map3(path):
+
+    with open(path, 'r', encoding = 'utf-8', errors = 'ignore') as f:
+        words_with_punctuations = []
+        words = []
+        for line in f:
+            for word in line.split():
+                words_with_punctuations.append(word)
+                words.append(tokenizer.tokenize(word)[0])       # [0] - coz gives a list as a result when tokenized
+
+    print("DATA FETCHED FROM FILE : \n", words_with_punctuations)
+    print("\nWORDS TOKENIZED & PREPROCESSED : \n", words)
+
+    dict_values = {}
+    for word in words:
+        if word not in dict_values.keys():
+            dict_values[word] = [1]
+
+        else:
+            dict_values[word].append(1)
+
+    return dict_values
+
+def reduce3(d):
+    reduced_dict = {}
+    for i, j in d.items():
+        reduced_dict[i] = len(j)
+    
+    return reduced_dict
+
+path3 = '/content/drive/MyDrive/SEM 6/BD/LAB/FileC.txt'
+result3 = map3(path3)
+print("\nMAPPED DATA : \n", result3)
+print("\nREDUCED DATA : \n", reduce3(result3))
+
+
+
+##Q4.
+from nltk.tokenize import RegexpTokenizer
+tokenizer = RegexpTokenizer(r'\w+')
+
+def mapReduce4(path):
+    # Reading the file
+    with open(path, 'r') as f:
+        lines = f.readlines()
+    
+    print("FILE CONTENTS : \n", lines)
+
+    # Preprocessing
+    sentence_line = {}
+    words = []
+    for i in range(len(lines)):
+        sentence_line[i+1] = tokenizer.tokenize(lines[i])
+
+        for word in sentence_line[i+1]:
+            if word not in words:
+                words.append(word)
+    
+    print("\nSENTENCES MAPPED TO LINE NUMBER : \n", sentence_line)
+
+    # Mapping every word to the line number
+    map_reduced = {}
+    for word in words:
+        line_numbers = []
+        for i, j in sentence_line.items():
+            if word in j:
+                line_numbers.append(i)
+
+        map_reduced[word] = line_numbers
+
+    print("\nRESULTS : \n")
+    return map_reduced
+
+
+path2 = '/content/drive/MyDrive/SEM 6/BD/LAB/FileB.txt'
+mapReduce4(path2)
+
+
+##Q5.
+def mapReduce5(path):
+    # Reading the file
+    with open(path, 'r') as f:
+        lines = f.readlines()
+    
+    print("FILE CONTENTS : \n", lines)
+
+    # Preprocessing
+    sentence_line = {}
+    words = []
+    for i in range(len(lines)):
+        tokens = tokenizer.tokenize(lines[i]) 
+        token_case_insensitive = [token.lower() for token in tokens] 
+        sentence_line[i+1] = token_case_insensitive
+
+        for word in sentence_line[i+1]:
+            if word not in words:
+                words.append(word)
+    
+    print("\nSENTENCES MAPPED TO LINE NUMBER : \n", sentence_line)
+
+    # Mapping every word to the line number
+    map_reduced = {}
+    for word in words:
+        line_numbers = []
+        for i, j in sentence_line.items():
+            if word in j:
+                line_numbers.append(i)
+
+        map_reduced[word] = line_numbers
+
+    print("\nRESULTS : \n")
+    return map_reduced
+
+
+path2 = '/content/drive/MyDrive/SEM 6/BD/LAB/FileB.txt'
+mapReduce5(path2)
+
+
+
+##Q6.
+
+import pandas as pd
+
+path = 'https://raw.githubusercontent.com/datameet/railways/master/schedules.json'
+df = pd.read_json((path))
+df.head()
+
+def map(data):
+  map1=[]
+  for i in data:
+    map1.append((i.lower(),1))
+  #print("Output function of map :",map1)
+  return map1
+
+def reduce(maps):
+  red_map = {}
+  for j in maps:
+    i=j[0]
+    if i in red_map.keys():
+        red_map[i] += 1
+    else:
+        red_map[i] = 1
+  #print("Output function of reduce :",red_map)
+  return red_map
+
+import operator
+data=df['train_name']
+mop=map(data)
+op2=reduce(mop)
+fin=sorted(op2.items(),key=operator.itemgetter(1),reverse=True)
+#print(fin)
+k=int(input("Enter the value of K :"))
+#print(fin[:5])
+op=fin[:k]
+print("Top K trains are :")
+for i in range(0,k):
+  print("Name :",op[i][0])
+  print("Count :",op[i][1])
+  
